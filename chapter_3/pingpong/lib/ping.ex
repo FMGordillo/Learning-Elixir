@@ -6,6 +6,7 @@ defmodule Ping do
   def await do
     receive do
       {:pong, sender} ->
+        IO.puts("PING!")
         send(sender, {:ping, self()})
     end
 

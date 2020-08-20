@@ -1,15 +1,15 @@
 defmodule Pong do
   def start do
-    await(0)
+    await()
   end
 
-  def await(counter) do
+  def await do
     receive do
       {:ping, sender} ->
-        IO.puts("Counter is on #{counter}")
+        IO.puts("PONG!")
         send(sender, {:pong, self()})
     end
 
-    await(counter + 1)
+    await()
   end
 end
