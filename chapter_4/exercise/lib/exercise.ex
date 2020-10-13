@@ -23,8 +23,8 @@ defmodule Exercise do
     GenServer.call(@name, {:delete, key})
   end
 
-  def exist(key) do
-    GenServer.call(@name, {:exist, key})
+  def exists(key) do
+    GenServer.call(@name, {:exists, key})
   end
 
   def clear() do
@@ -41,27 +41,38 @@ defmodule Exercise do
   end
 
   def handle_call({:write, data}, _from, stats) do
-    IO.puts("DOU, inserted")
-    {:reply, stats, stats}
+    [key, values] = data
+    result = upsert_stats(stats, key, values)
+    {:reply, data, result}
   end
 
-  def handle_call({:read, data}, _from, stats) do
-    IO.puts("DOU, reading")
-    {:reply, stats, stats}
+  def handle_call({:read, key}, _from, stats) do
+    query_result = Map.get(stats, key)
+    {:reply, query_result, stats}
   end
 
   def handle_call({:delete, key}, _from, stats) do
-    IO.puts("DOU, deleted")
-    {:reply, stats, stats}
+    new_stats = Map.delete(stats, key)
+    {:reply, new_stats, new_stats}
   end
 
   def handle_call({:exists, key}, _from, stats) do
-    IO.puts("DOU, HABER")
-    {:reply, stats, stats}
+    result = Map.has_key?(stats, key)
+    {:reply, result, stats}
   end
 
-  def handle_cast(:clear, stats) do
-    IO.puts("DOU, a limpiar we")
-    {:reply, stats}
+  def handle_cast(:clear, _stats) do
+    {:noreply, %{}}
   end
+
+  defp upsert_stats(old_stats, key, value) do
+    case Map.has_key?(old_stats, key) do
+      true ->
+        Map.update!(old_stats, key, value)
+
+      false ->
+        Map.put_new(old_stats, key, value)
+    end
+  end
+
 end
